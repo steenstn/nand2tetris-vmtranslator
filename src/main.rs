@@ -1,12 +1,21 @@
-use crate::commands::push;
+use crate::arithmetic_commands::*;
+use crate::memory_commands::*;
 use std::fs::read_to_string;
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
 
-mod commands;
+mod arithmetic_commands;
+mod memory_commands;
 
 fn main() {
-    let path = "/home/steen/nand2tetris/projects/07/MemoryAccess/StaticTest/StaticTest.vm";
-    let filename = "StaticTest";
-    let lines = read_lines(&path);
+    let path = "/Users/alexandersteen/nand2tetris/projects/7/StackArithmetic/SimpleAdd/SimpleAdd";
+    let filename = "SimpleAdd";
+    let input_file = format!("{}.vm", path);
+    let output_file = format!("{}.asm", path);
+    //let filename = "BasicTest";
+    let lines = read_lines(&input_file);
+    let mut output_vector: Vec<String> = Vec::new();
 
     println!("File content");
     for line in lines {
@@ -14,13 +23,35 @@ fn main() {
         if tokens.is_empty() {
             continue;
         }
+
         let result = match tokens[0] {
             "//" => continue,
             "push" => push(tokens[1], tokens[2].parse().unwrap(), filename.to_string()),
             "pop" => "pop".to_string(),
+            "eq" => "eq".to_string(),
+            "gt" => "gt".to_string(),
+            "lt" => "lt".to_string(),
+            "not" => not().to_string(),
+            "or" => or().to_string(),
+            "sub" => sub().to_string(),
+            "add" => add().to_string(),
+            "and" => and().to_string(),
+            "neg" => neg().to_string(),
             _ => "Something else".to_string(),
         };
-        println!("{result}");
+
+        output_vector.push(result);
+    }
+
+    let output_path = Path::new(&output_file);
+    let mut file = match File::create(&output_path) {
+        Err(why) => panic!("could not create path: {}", why),
+        Ok(file) => file,
+    };
+
+    for a in output_vector {
+        let _ = file.write_all(a.as_bytes());
+        println!("{a}");
     }
 }
 fn read_lines(filename: &str) -> Vec<String> {

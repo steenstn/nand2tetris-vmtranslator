@@ -31,7 +31,8 @@ fn push_constant(value: i32) -> String {
         A=M
         M=D
         @SP
-        M=M+1"
+        M=M+1
+"
     )
 }
 
@@ -63,7 +64,8 @@ D=M
 A=M
 M=D
 @SP
-M=M+1",
+M=M+1
+",
     )
 }
 
@@ -77,7 +79,8 @@ D=M
 A=M
 M=D
 @SP
-M=M+1"
+M=M+1
+"
     )
 }
 
@@ -94,6 +97,7 @@ D=M
 A=M
 M=D
 @SP
-M=M+1"
+M=M+1
+"
     )
 }
