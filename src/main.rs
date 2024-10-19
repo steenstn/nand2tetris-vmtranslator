@@ -9,13 +9,15 @@ mod arithmetic_commands;
 mod memory_commands;
 
 fn main() {
-    let path = "/Users/alexandersteen/nand2tetris/projects/7/StackArithmetic/SimpleAdd/SimpleAdd";
-    let filename = "SimpleAdd";
+    let path = "/Users/alexandersteen/nand2tetris/projects/7/MemoryAccess/PointerTest/PointerTest";
+    let filename = "PointerTest";
     let input_file = format!("{}.vm", path);
     let output_file = format!("{}.asm", path);
-    //let filename = "BasicTest";
+
     let lines = read_lines(&input_file);
     let mut output_vector: Vec<String> = Vec::new();
+
+    let mut branch_counter = 0;
 
     println!("File content");
     for line in lines {
@@ -27,10 +29,10 @@ fn main() {
         let result = match tokens[0] {
             "//" => continue,
             "push" => push(tokens[1], tokens[2].parse().unwrap(), filename.to_string()),
-            "pop" => "pop".to_string(),
-            "eq" => "eq".to_string(),
-            "gt" => "gt".to_string(),
-            "lt" => "lt".to_string(),
+            "pop" => pop(tokens[1], tokens[2].parse().unwrap(), filename.to_string()),
+            "eq" => eq(&mut branch_counter).to_string(),
+            "gt" => gt(&mut branch_counter).to_string(),
+            "lt" => lt(&mut branch_counter).to_string(),
             "not" => not().to_string(),
             "or" => or().to_string(),
             "sub" => sub().to_string(),
