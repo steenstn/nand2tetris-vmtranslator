@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 indoc = "2"
+regex = "1.11.0"
