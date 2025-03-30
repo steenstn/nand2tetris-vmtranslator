@@ -7,7 +7,7 @@ fn get_hack_name(segment: &str) -> String {
         "this" => "THIS",
         "that" => "THAT",
         "temp" => "5",
-        _ => panic!("AAH {}", segment),
+        _ => panic!("Unknown segment: {}", segment),
     };
     res.to_string()
 }

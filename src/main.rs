@@ -1,26 +1,70 @@
 use crate::{arithmetic_commands::*, branching_commands::*, memory_commands::*};
 use regex::Regex;
+use std::env;
+use std::fs;
 use std::fs::read_to_string;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use std::process::exit;
 
 mod arithmetic_commands;
 mod branching_commands;
 mod memory_commands;
 
 fn main() {
-    //    let path = "/Users/alexandersteen/repos/nand2tetris-vmtranslator/test.vm";
-    ////let path = "/Users/alexandersteen/nand2tetris/projects/8/ProgramFlow/BasicLoop/BasicLoop.vm";
-    let path = "/Users/alexandersteen/nand2tetris/projects/8/ProgramFlow/FibonacciSeries/FibonacciSeries.vm";
+    let args: Vec<String> = env::args().collect();
+    let path = Path::new(&args[1]);
 
-    let output_file = path.replace(".vm", ".asm");
+    let mut files_to_parse: Vec<String> = Vec::new();
+
+    if path.is_dir() {
+        match fs::read_dir(path) {
+            Ok(directory) => {
+                for dir in directory {
+                    match dir {
+                        Ok(file) => {
+                            let extension =
+                                String::from(file.path().extension().unwrap().to_str().unwrap());
+
+                            if extension == "vm" {
+                                files_to_parse.push(String::from(file.path().to_str().unwrap()));
+                            }
+                        }
+                        Err(why) => panic!("{}", why),
+                    }
+                }
+            }
+            Err(why) => {
+                println!("Failed to read directory: {why}")
+            }
+        };
+    } else if path.is_file() {
+        files_to_parse.push(path.to_str().unwrap().to_string());
+    } else {
+        println!("Provided argument is not a .vm file or directory");
+        exit(0);
+    };
+
+    for f in files_to_parse {
+        println!("Parsing {}", f.to_string())
+    }
+
+    let output_file = path.to_str().unwrap().replace(".vm", ".asm");
     println!("Writing file: {output_file}");
 
-    let filename_regex = Regex::new(r"([\w ]*)\.vm").unwrap();
-    let static_filename = filename_regex.find(&path).unwrap().as_str();
+    let filename_regex = match Regex::new(r"([\w ]*)\.vm") {
+        Ok(regex) => regex,
+        Err(why) => panic!("Could not create regex: {}", why),
+    };
 
-    let lines = read_lines(&path);
+    let static_filename = filename_regex
+        .find(&path.to_str().unwrap())
+        .unwrap()
+        .as_str();
+    println!("Static filename: {static_filename}");
+
+    let lines = read_lines(&path.to_str().unwrap());
     let mut output_vector: Vec<String> = Vec::new();
 
     let mut branch_counter = 0;
@@ -63,6 +107,9 @@ fn main() {
             "neg" => neg().to_string(),
             "goto" => goto(tokens[1]),
             "if-goto" => if_goto(tokens[1]),
+            // call
+            // function
+            // return
             _ => tokens[0].to_string(),
         };
 

@@ -27,3 +27,7 @@ D;JNE
 "
     )
 }
+
+pub fn return_asm() -> String {
+    formatdoc!("// return")
+}
