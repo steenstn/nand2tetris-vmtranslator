@@ -31,7 +31,7 @@ pub fn pop(segment: &str, value: i32, filename: String) -> String {
     }
 }
 
-fn push_constant(value: i32) -> String {
+pub fn push_constant(value: i32) -> String {
     formatdoc!(
         "// push constant {value}
         @{value}

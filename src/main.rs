@@ -31,11 +31,12 @@ fn main() {
         Err(_) => panic!("Could not open file for appending"),
     };
 
-    let mut branch_counter = 0;
-    for f in files_to_parse {
-        println!("Parsing {}", f.to_string());
+    for current_file in files_to_parse {
+        let mut branch_counter = 0;
+        let mut function_call_counter = 0;
+        println!("Parsing {}", current_file.to_string());
 
-        let lines = read_lines(f.as_str());
+        let lines = read_lines(current_file.as_str());
         let mut output_vector: Vec<String> = Vec::new();
 
         for line in lines {
@@ -69,8 +70,12 @@ fn main() {
                 "goto" => goto(tokens[1]),
                 "if-goto" => if_goto(tokens[1]),
                 "return" => return_asm(),
-                // call
-                // function
+                "function" => function_asm(tokens[1], tokens[2]),
+                "call" => call(
+                    tokens[1],
+                    current_file.replace(".vm", "").as_str(),
+                    &mut function_call_counter,
+                ),
                 _ => tokens[0].to_string(),
             };
 
