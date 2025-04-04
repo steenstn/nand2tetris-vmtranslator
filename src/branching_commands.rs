@@ -72,6 +72,7 @@ M=M-1
 A=M
 D=M
 @ARG
+A=M
 M=D
 // SP = ARG + 1
 @ARG
@@ -81,6 +82,8 @@ M=D
 // THAT = *(endFrame - 1)
 @R13
 D=M-1
+A=D
+D=M
 @THAT
 M=D
 // THIS = *(endFrame -2)
@@ -88,6 +91,8 @@ M=D
 D=A
 @R13
 D=M-D
+A=D
+D=M
 @THIS
 M=D
 // ARG = *(endFrame - 3)
@@ -95,6 +100,8 @@ M=D
 D=A
 @R13
 D=M-D
+A=D
+D=M
 @ARG
 M=D
 // LCL = *(endFrame - 4)
@@ -102,6 +109,8 @@ M=D
 D=A
 @R13
 D=M-D
+A=D
+D=M
 @LCL
 M=D
 // goto retAddr
