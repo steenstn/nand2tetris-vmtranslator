@@ -73,6 +73,7 @@ fn main() {
                 "function" => function_asm(tokens[1], tokens[2]),
                 "call" => call(
                     tokens[1],
+                    tokens[2],
                     current_file.replace(".vm", "").as_str(),
                     &mut function_call_counter,
                 ),

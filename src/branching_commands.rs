@@ -50,9 +50,64 @@ pub fn return_asm() -> String {
     LCL = *(endFrame - 4)
     goto retAddr
     */
-
+    // R13 = endFrame
+    // R14 = retAddr
     formatdoc!(
         "// return
+// endFrame = LCL
+@LCL
+D=M
+@R13
+M=D
+//retAddr = *(endFrame - 5)
+@5
+D=A
+@R13
+D=M-D
+@R14
+M=D
+//*ARG = pop()
+@SP
+M=M-1
+A=M
+D=M
+@ARG
+M=D
+// SP = ARG + 1
+@ARG
+D=M+1
+@SP
+M=D
+// THAT = *(endFrame - 1)
+@R13
+D=M-1
+@THAT
+M=D
+// THIS = *(endFrame -2)
+@2
+D=A
+@R13
+D=M-D
+@THIS
+M=D
+// ARG = *(endFrame - 3)
+@3
+D=A
+@R13
+D=M-D
+@ARG
+M=D
+// LCL = *(endFrame - 4)
+@4
+D=A
+@R13
+D=M-D
+@LCL
+M=D
+// goto retAddr
+@R14
+A=M
+0;JMP
 ",
     )
 }
@@ -82,7 +137,12 @@ pub fn function_asm(function_name: &str, num_args: &str) -> String {
     )
 }
 
-pub fn call(function_name: &str, file_name: &str, function_call_counter: &mut i32) -> String {
+pub fn call(
+    function_name: &str,
+    num_arguments: &str,
+    file_name: &str,
+    function_call_counter: &mut i32,
+) -> String {
     // call Bar.mult 2
     /*
 
@@ -100,8 +160,63 @@ pub fn call(function_name: &str, file_name: &str, function_call_counter: &mut i3
     */
     let result = formatdoc!(
         "// call {function_name}
-
-goto {function_name}
+// Push return address
+@{return_address}
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// Push local
+@LCL
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// Push ARG
+@ARG
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// Push THIS
+@THIS
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// Push THAT
+@THAT
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// ARG = SP - 5 - nArgs
+@SP
+D=M
+@5
+D=D-A
+@{num_arguments}
+D=D-A
+@ARG
+M=D
+// LCL = SP
+@SP
+D=M
+@LCL
+M=D
+// goto
+@{function_name}
+0;JMP
 ({return_address})",
         return_address = format!(
             "{}.{}$ret.{}",
