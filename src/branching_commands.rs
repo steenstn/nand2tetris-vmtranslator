@@ -1,19 +1,23 @@
 use crate::memory_commands::push_constant;
 use indoc::formatdoc;
 
-pub fn label(label: &str) -> String {
+pub fn label(label: &str, function_name: &str) -> String {
     formatdoc!(
-        "({label})
-"
+        "({}.{})
+",
+        function_name,
+        label
     )
 }
 
-pub fn goto(label: &str) -> String {
+pub fn goto(label: &str, current_function_name: &str) -> String {
     formatdoc!(
         "// goto
-@{label}
+@{}.{}
 0;JMP
-"
+",
+        current_function_name,
+        label
     )
 }
 
@@ -23,16 +27,18 @@ When
 https://drive.google.com/file/d/1BexrNmdqYhKPkqD_Y81qNAUeyfzl-ZtO/view sida 81
 
 */
-pub fn if_goto(label: &str) -> String {
+pub fn if_goto(label: &str, current_function_name: &str) -> String {
     formatdoc!(
         "// if-goto
 @SP
 M=M-1
 A=M
 D=M
-@{label}
+@{}.{}
 D;JNE
-"
+",
+        current_function_name,
+        label
     )
 }
 
@@ -41,7 +47,7 @@ pub fn return_asm() -> String {
 
     /*
     endFrame = LCL // endFrame is a temporary variable
-    retAddr = *(endFrame - 5) // get the return address
+    retAddr = *(endFrame - 5) // get the return address (the content)
     *ARG = pop() // Repositions the return value for the caller
     SP = ARG + 1 // Repositions SP of the caller
     THAT = *(endFrame - 1)
@@ -80,8 +86,10 @@ D=M+1
 @SP
 M=D
 // THAT = *(endFrame - 1)
+@1
+D=A
 @R13
-D=M-1
+D=M-D
 A=D
 D=M
 @THAT
@@ -209,7 +217,7 @@ A=M
 M=D
 @SP
 M=M+1
-// ARG = SP - 5 - nArgs
+// ARG = SP - 5 - nArgs ({num_arguments})
 @SP
 D=M
 @5
@@ -226,11 +234,9 @@ M=D
 // goto
 @{function_name}
 0;JMP
-({return_address})",
-        return_address = format!(
-            "{}.{}$ret.{}",
-            file_name, function_name, function_call_counter
-        )
+({return_address})
+",
+        return_address = format!("{}$ret.{}", function_name, function_call_counter)
     );
     *function_call_counter += 1;
     return result;

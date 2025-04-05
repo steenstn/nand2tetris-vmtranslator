@@ -6,6 +6,7 @@ use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 
 mod arithmetic_commands;
 mod branching_commands;
@@ -34,10 +35,18 @@ fn main() {
     for current_file in files_to_parse {
         let mut branch_counter = 0;
         let mut function_call_counter = 0;
-        println!("Parsing {}", current_file.to_string());
+        println!("Parsing {}", current_file.to_str().unwrap());
 
-        let lines = read_lines(current_file.as_str());
+        let lines = read_lines(current_file.to_str().unwrap());
         let mut output_vector: Vec<String> = Vec::new();
+        let filename = current_file
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .replace(".vm", "");
+        println!("Da filename {}", filename);
+        let mut current_function_name: String = String::new();
 
         for line in lines {
             let tokens: Vec<&str> = line.split_whitespace().collect::<Vec<&str>>();
@@ -57,7 +66,7 @@ fn main() {
                     tokens[2].parse().unwrap(),
                     static_filename.to_string(),
                 ),
-                "label" => label(tokens[1]),
+                "label" => label(tokens[1], current_function_name.as_str()),
                 "eq" => eq(&mut branch_counter).to_string(),
                 "gt" => gt(&mut branch_counter).to_string(),
                 "lt" => lt(&mut branch_counter).to_string(),
@@ -67,14 +76,23 @@ fn main() {
                 "add" => add().to_string(),
                 "and" => and().to_string(),
                 "neg" => neg().to_string(),
-                "goto" => goto(tokens[1]),
-                "if-goto" => if_goto(tokens[1]),
+                "goto" => goto(tokens[1], current_function_name.as_str()),
+                "if-goto" => if_goto(tokens[1], current_function_name.as_str()),
                 "return" => return_asm(),
-                "function" => function_asm(tokens[1], tokens[2]),
+                "function" => {
+                    current_function_name = tokens[1].to_string();
+                    function_asm(tokens[1], tokens[2])
+                }
                 "call" => call(
                     tokens[1],
                     tokens[2],
-                    current_file.replace(".vm", "").as_str(),
+                    current_file
+                        .file_name()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .replace(".vm", "")
+                        .as_str(),
                     &mut function_call_counter,
                 ),
                 _ => tokens[0].to_string(),
@@ -98,8 +116,8 @@ fn read_lines(filename: &str) -> Vec<String> {
         .collect()
 }
 
-fn get_files_to_parse(path: &Path) -> Vec<String> {
-    let mut files_to_parse: Vec<String> = Vec::new();
+fn get_files_to_parse(path: &Path) -> Vec<PathBuf> {
+    let mut files_to_parse: Vec<PathBuf> = Vec::new();
     if path.is_dir() {
         match fs::read_dir(path) {
             Ok(directory) => {
@@ -110,7 +128,7 @@ fn get_files_to_parse(path: &Path) -> Vec<String> {
                                 String::from(file.path().extension().unwrap().to_str().unwrap());
 
                             if extension == "vm" {
-                                files_to_parse.push(String::from(file.path().to_str().unwrap()));
+                                files_to_parse.push(file.path());
                             }
                         }
                         Err(why) => panic!("{}", why),
@@ -122,7 +140,7 @@ fn get_files_to_parse(path: &Path) -> Vec<String> {
             }
         };
     } else if path.is_file() {
-        files_to_parse.push(path.to_str().unwrap().to_string());
+        files_to_parse.push(path.to_path_buf());
     } else {
         println!("Provided argument is not a .vm file or directory");
     };

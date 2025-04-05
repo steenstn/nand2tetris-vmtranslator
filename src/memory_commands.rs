@@ -64,7 +64,7 @@ fn pop_pointer(value: i32) -> String {
     let address = get_this_that_address(value);
 
     formatdoc!(
-        "// pop pointer $value
+        "// pop pointer {address}
 @SP
 M=M-1
 A=M
@@ -170,7 +170,7 @@ D=D+M
 @R13
 M=D
 
-// *SP++
+// SP--
 @SP
 M=M-1
 
