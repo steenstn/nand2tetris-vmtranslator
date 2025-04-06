@@ -70,6 +70,8 @@ M=D
 D=A
 @R13
 D=M-D
+A=D
+D=M
 @R14
 M=D
 //*ARG = pop()
